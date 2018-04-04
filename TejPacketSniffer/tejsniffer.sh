@@ -61,6 +61,8 @@ read -p "[*]Enter your option [NUMBER] :" option
 					read -p"Do you want to replay it(y/n):" replace
 					if [ $replace == "y" ];then
 						nofile=0;
+					else
+						nofile=1;
 					fi
 				else
 					nofile=0
