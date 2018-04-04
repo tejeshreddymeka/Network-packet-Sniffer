@@ -63,7 +63,7 @@ read -p "[*]Enter your option [NUMBER] :" option
 						nofile=0;
 					fi
 				else
-					nofile=1
+					nofile=0
 				fi
 
 			done
