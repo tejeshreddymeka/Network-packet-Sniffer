@@ -325,7 +325,8 @@ if __name__ == '__main__':
                         try:
                             unpackEthernetPack(data[startindex:lastindex],0,Depth)
                         except:
-                            print "Struct error"
+                            junk = "Best sona"
+                            #print "Struct error"
                         startindex = lastindex+20
                     index+=1
 
