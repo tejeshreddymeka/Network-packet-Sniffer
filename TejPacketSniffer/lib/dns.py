@@ -10,7 +10,7 @@ def dns(data_3,udp_size,newObject):
 	if show_dns !=0:
             id,flags_codes,query_c,answ_c,auth_c,addi_c= struct.unpack("!HHHHHH",data_3[:12])
 	    opcode = (flags_codes>>11)&15
-            #outfile.write(blue_color+"[*]Domain Name System[DNS]:"+end_color)
+            #print blue_color+"[*]Domain Name System[DNS]:"+end_color#check
             Response,OpCode,Authoritative,Truncated,Recursion,AvailRecursion,Z,AnsAuth,NonAuth = "","","","","","","","",""
             if is_bit_set(flags_codes,1,16):
 	       	Response = "Response:"+green_color+"Response(1)"+end_color
@@ -49,7 +49,7 @@ def dns(data_3,udp_size,newObject):
             else:
 	        NonAuth = "Non-authenticated_data:Unacceptable(0)"
             rcode = (flags_codes)&15
-            #outfile.write("\t"+Response+OpCode+Authoritative+Truncated+Recursion+AvailRecursion+Z+AnsAuth+NonAuth+" Transaction_ID:0x%x"%id+" Reply_code:"+str(dns_rcodes["%d"%rcode])+"Queries_count:"+str(query_c)+"Answers_count:"+str(answ_c)+"Authority_count:"+str(auth_c)+"Additional_info_count:"+str(addi_c))
+            #print "\t"+Response+OpCode+Authoritative+Truncated+Recursion+AvailRecursion+Z+AnsAuth+NonAuth+" Transaction_ID:0x%x"%id+" Reply_code:"+str(dns_rcodes["%d"%rcode])+"Queries_count:"+str(query_c)+"Answers_count:"+str(answ_c)+"Authority_count:"+str(auth_c)+"Additional_info_count:"+str(addi_c)#check
 
             queries = ''
             answers = ''
@@ -60,14 +60,15 @@ def dns(data_3,udp_size,newObject):
             qtype,qclass = struct.unpack("!HH",data_3[index:index+4])
             index+=4
 	    queries+="\tQueries:"+yellow_color+"Name:"+qname+end_color+"    Type:"+dns_query_types["%d"%qtype]+"  Class:"+dns_query_classes["%d"%qclass]+'\n'
+            
             if is_bit_set(flags_codes,1,16):
 	        if answ_c != 0:
 		    answers+="\tAnswers:-\n"
         	for i in range(answ_c):
-		    #print struct.unpack("!s",data_3[index])
+		    #print struct.unpack("!s",data_3[index])#check
 		    req = struct.unpack("!s",data_3[index+1])
         	    req_index = ord(req[0])
-	            #print req_index,struct.unpack("!s",data_3[ord(req_index[0])])
+	            #print req_index,struct.unpack("!s",data_3[req_index])#check
 		    index+=2
 		    a_type,a_class,a_ttl,a_len = struct.unpack("!H H I H",data_3[index:index+10])
         	    index+=10
@@ -77,31 +78,38 @@ def dns(data_3,udp_size,newObject):
                     answers+="\t(*)"+str(i+1)+":- Name:"+a_name+"Type:"+dns_query_types["%d"%a_type]+"Class:"+dns_query_classes["%d"%a_class]+"Time_to_live:%d"%a_ttl+"Data length:%d"%a_len+yellow_color+rdata+end_color+'\n'
 		if auth_c != 0:
                     auth_answers+="\tAuthoritative:-\n"
-                    #print 'auth'
+                    #print 'auth'#check
                 for i in range(auth_c):
-                    #print i
-                    #print struct.unpack("!s",data_3[index])
+                    #print i #check
+                    tmp_ind =  struct.unpack("!s",data_3[index])[0] 
+                    #print tmp_ind #check
                     req = struct.unpack("!s",data_3[index+1])
                     req_index = ord(req[0])
-                    #print req_index,struct.unpack("!s",data_3[ord(re$
-                    index+=2
+                    if(tmp_ind=='\x00'):
+                        index+=1
+                    else:
+                        index+=2
                     a_type,a_class,a_ttl,a_len = struct.unpack("!H H I H",data_3[index:index+10])
                     index+=10
 	            rdata =  get_dns_data(data_3,index,a_type)
                     index+=a_len
-                    a_name,new_index = get_domain_name(data_3,req_index)
+                    if tmp_ind!='\x00':
+                        a_name,new_index = get_domain_name(data_3,req_index)
+                    else:
+                        a_name="<Root>"
                     auth_answers+="\t(*)"+str(i+1)+":- Name:"+a_name+"Type:"+dns_query_types["%d"%a_type]+"Class:"+dns_query_classes["%d"%a_class]+"Time_to_live:%d"%a_ttl+"Data_length:%d"%a_len+yellow_color+rdata+end_color+'\n'
         	if addi_c != 0:
                     addi_answers+="\tAdditional:-\n"
+                    #print "additional" #check
                 for i in range(addi_c):
-                
+                    
                     index+=2
                     a_type,a_class,a_ttl,a_len = struct.unpack("!H H I H",data_3[index:index+10])
                     index+=10
                     rdata =  get_dns_data(data_3,index,a_type)
                     index+=a_len
                     a_name,new_index = get_dns_name(data_3,req_index)
-                    #print "qtype:",qtype
+                    #print "qtype:",qtype#check
                     addi_answers+="\t(*)"+str(i+1)+":- Name:"+a_name+"Type:"+dns_query_types["%d"%a_type]+"Class:"+dns_query_classes["%d"%a_class]+"Time_to_live:%d"%a_ttl+"Data_length:%d"%a_len+yellow_color+rdata+end_color+'\n'
                 
         newObject.setDNS(Response,OpCode,Authoritative,Truncated,Recursion,AvailRecursion,Z,AnsAuth,NonAuth," Transaction_ID:0x%x"%id," Reply_code:"+str(dns_rcodes["%d"%rcode]),"Queries_count:"+str(query_c),"Answers_count:"+str(answ_c),"Authority_count:"+str(auth_c),"Additional_info_count:"+str(addi_c),queries,answers,auth_answers,addi_answers)
@@ -127,20 +135,26 @@ def get_dns_data(data_3,index,dns_type):
 def get_domain_name(data_3,index):
 	check,req = struct.unpack("!s",data_3[index]),struct.unpack("!s",data_3[index+1])
 	a_name = ""
-#	print check,req
-#        print 'get_domain_name'
+        prev_check = check
+        check = ord(check[0])
+        check = (check>>6)<<6
+	#print check,req#check
+        #print 'get_domain_name'#check
         isNullBit = 1
         try:
-            if check[0]!='\x00':
-	        if check[0]!='\xc0' and check[0]!='\xc1':
+            if prev_check[0]!='\x00':
+	        if check!=ord('\xc0'):
         	        a_name,index = get_dns_name(data_3,index)
 		        check= struct.unpack("!s",data_3[index])
+                        check = ord(check)
+                        check = (check>>6)<<6
                         isNullBit = ord(struct.unpack("!s",data_3[index-1])[0])
-                if check[0]=='\xc0'and isNullBit!=0  or check[0]=='\xc1':
+                if check[0]==ord('\xc0')and isNullBit!=0:
                         index+=1 
-                        req = struct.unpack("!s",data_3[index])
-		        req_index = ord(req[0])
-#		        #print index,'req = ',req
+                        req = struct.unpack("!H",data_3[index])
+		        req_index = req[0]
+                        req_index = (req_index<<2)>>2
+		        #print index,'req = ',req #check
         	        req_name,new_index = get_domain_name(data_3,req_index)
 	                a_name+=req_name
 	                index+=2
@@ -152,21 +166,25 @@ def get_domain_name(data_3,index):
 	return a_name,index
 
 def get_dns_name(data_3,index):
- #       print index,'get_dns_name'
-
+        #print index,'get_dns_name'#check
+        if index==0:
+            return "",index+1;
 	char = struct.unpack("!s",data_3[index])
 	qname = ""
-        
-	while int(ord(char[0]))!=0 and char[0]!='\xc0':
+        new_char = ord(char[0])
+        new_char = (new_char>>6)<<6
+	while int(ord(char[0]))!=0 and new_char!=ord('\xc0'):
 		for i in range(int(ord(char[0]))):
 			index+=1
 			char = struct.unpack("!s",data_3[index])
 			qname+="%s"%char[0]
-			#print index,qname
+			#print index,qname#check
 		index+=1
 		char = struct.unpack("!s",data_3[index])
+                new_char = ord(char[0])
+                new_char = (new_char>>6)<<6
+                #print "here: ",char
 		qname+="."
-        if char[0]!='\xc0' :
+        if new_char!=ord('\xc0'):
 	    index+=1
 	return qname,index
-
