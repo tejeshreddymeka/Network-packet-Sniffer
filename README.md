@@ -13,7 +13,7 @@ INSTRUCTIONS:-
 
 * Launch the tejNetworkSniffer by executing "tejsniffer.sh" from this folder in  terminal.
 
-* If you want to apply the filter on the captured packets, open another terminal without closing this and again the "tejsniffer.sh" file and select option 2. 
+* If you want to apply the filter on the captured packets, open another terminal without closing this and again run "tejsniffer.sh" file and select option 2. 
 
 * After entering into the filter try "help" command to get info about the available filters.
 
