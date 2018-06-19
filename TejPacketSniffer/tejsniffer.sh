@@ -1,5 +1,7 @@
 #!/bin/bash
 
+
+#color codes
 red_color='\033[1;31;49m'
 green_color='\033[1;32;49m'
 yellow_color='\033[1;33;49m'
@@ -20,25 +22,25 @@ printf '\e[3;0;0t'
 
 heading=`cat ./banners/logo.txt`
 
+#delete the file that is passed to this function if exits
 delOutFile(){
 if [[ -f $1 ]];then
 	rm $1
 fi
 }
 
+#infinite loop
 until [ 1 -eq 1];do
-
-clear
-echo -e "$heading"
-echo -e "${green_color}\t\t\t1.Sniff Network Packets"
-echo -e "\t\t\t2.Filter packets"
-echo -e "\t\t\t3.Open previously Captured Packets"
-echo -e "\t\t\t4.Exit\n\n"
-
-read -p "[*]Enter your option [NUMBER] :" option
-
+	clear
+	echo -e "$heading"
+	echo -e "${green_color}\t\t\t1.Sniff Network Packets"
+	echo -e "\t\t\t2.Filter packets"
+	echo -e "\t\t\t3.Open previously Captured Packets"
+	echo -e "\t\t\t4.Exit\n\n"
+	read -p "[*]Enter your option [NUMBER] :" option
 	case $option in
-	[1])
+	[1])     
+		#Sniff Network Packets
 		
 		echo -e "${green_color}[*]Select packet unpacking mode\n\t\t1.)Breifly\n\t\t2.)Verbosly${end_color}"
 		read -p "[*]Enter you option [NUMBER] :" unpackoption
@@ -51,38 +53,39 @@ read -p "[*]Enter your option [NUMBER] :" option
 		read -p "[y/n]:" result
 		if [ "$result" == "y" ];then
 			nofile=1
+		
+			#loops until filename to save doesn't exits
+
 			until [ $nofile -eq 0 ];do
-
-			echo -e "${green_color}[*]Enter the name to save the file!${end_color}" 
-			read -p"File Name:" name
-			
-				if [[ -e "./savedfiles/${name}" ]];then
-					echo -e "${red_color}[*] ./savedfile/${name} already exists..!${end_color}"
-					read -p"Do you want to replay it(y/n):" replace
-					if [ $replace == "y" ];then
-						nofile=0;
+				echo -e "${green_color}[*]Enter the name to save the file!${end_color}" 
+				read -p"File Name:" name			
+					if [[ -e "./savedfiles/${name}" ]];then
+						echo -e "${red_color}[*] ./savedfile/${name} already exists..!${end_color}"
+						read -p"Do you want to replace it(y/n):" replace
+						if [ $replace == "y" ];then
+							nofile=0;
+						else
+							nofile=1;
+						fi
 					else
-						nofile=1;
+						nofile=0
 					fi
-				else
-					nofile=0
-				fi
-
 			done
 			echo "tejEnd">>output.raw
 			cp output.raw ./savedfiles/$name
-			
 			path=`pwd`
 			echo -e "${green_color}[*]File saved as ${path}/savedfiles/${name}"
-			
-		
 		fi
 		
+		#deleting the temporarly used files
+
 		delOutFile "output.raw"
 		delOutFile "sniffingdepth"
 		delOutFile "loading"
-		;;
+	;;
 	[2])
+		#filter packets
+
 		echo -e "${blue_color}[*] This option works only when you are running option 1) in other terminal...!${end_color}"
 		read -p"Do you want to contiue[y/n]:" result
 		if [ "$result" == "y" ];then
@@ -100,14 +103,15 @@ read -p "[*]Enter your option [NUMBER] :" option
 		
 			fi
 		fi
-		;;
+	;;
 	[3])	
+		#open previously saved packets file
+
 		path=`pwd`
 		echo -e "${blue_color}[*]File should be in ${path}/savedfiles/ directory....!${end_color}"
 		read -p"File name:" savefile
 		if [ -f ./savedfiles/$savefile ];then
 			cp ./savedfiles/$savefile output.raw
-		
 			echo -e "[*]${green_color}Opening ${path}/savedfiles/${savefile} .....${end_color}"
 			echo "1">loading
 			echo "1">sniffingdepth
@@ -127,17 +131,17 @@ read -p "[*]Enter your option [NUMBER] :" option
 		delOutFile "sniffingdepth"
 		;;
 	[4])
+		#exiting the application
+
 		exit 0
 		;;
 	*)	
-		echo -e "${red_color}[*]This option is not valid!!!${end_color}"
 		
+		echo -e "${red_color}[*]This option is not valid!!!${end_color}"
 		;;
-
 	esac
 	echo -e "${darkblue_color}"
 	read -p "Enter any key.........:)" useless
 	echo -e "${end_color}"
 done
-
 
