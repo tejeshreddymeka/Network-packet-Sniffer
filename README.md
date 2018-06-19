@@ -19,3 +19,6 @@ INSTRUCTIONS:-
 
 * If you feel uncomfortable to scroll in the terminal with mouse , you can use "shift + PageUP" or "shift + PageDown" keys.. :-)
 
+* You can get more info and screenshots of the working
+
+https://github.com/tejeshreddymeka/Network-packet-Sniffer/wiki
